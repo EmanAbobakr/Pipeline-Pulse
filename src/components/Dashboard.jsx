@@ -94,6 +94,16 @@ function Dashboard({ summary, onFilterChange }) {
     addFailure(workflow, date);
   };
 
+  // Reset handler
+  const handleReset = () => {
+    setFailures([
+      { workflow: 'CI Pipeline', failures: 3, last: '2025-07-09' },
+      { workflow: 'Deploy to Production', failures: 2, last: '2025-07-08' },
+      { workflow: 'Lint & Test', failures: 1, last: '2025-07-07' },
+      { workflow: 'Build Docs', failures: 1, last: '2025-07-06' },
+    ]);
+  };
+
   // Colorful card backgrounds (remove animation)
   const cardColors = [
     'linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%)',
@@ -108,6 +118,7 @@ function Dashboard({ summary, onFilterChange }) {
         <h2 style={{ margin: 0 }}>Pipeline Pulse Dashboard</h2>
         <button onClick={handleDownloadCSV} style={{marginLeft: 'auto', background:'#23272f', color:'#fff', border:'none', borderRadius:6, padding:'8px 18px', cursor:'pointer'}}>Download Excel</button>
         <button onClick={handleAddFailure} style={{marginLeft: 12, background:'#4f8cff', color:'#fff', border:'none', borderRadius:6, padding:'8px 18px', cursor:'pointer'}}>Simulate New Failure</button>
+        <button onClick={handleReset} style={{marginLeft: 12, background:'#ff5c5c', color:'#fff', border:'none', borderRadius:6, padding:'8px 18px', cursor:'pointer'}}>Reset</button>
       </div>
       <div className="summary-cards">
         <div className="card" style={{ background: cardColors[0], color: '#fff', boxShadow: '0 4px 24px rgba(255,126,95,0.18)' }}>
