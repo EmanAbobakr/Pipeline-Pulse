@@ -1,51 +1,81 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import './Dashboard.css';
 import voisLogo from '../assets/vois.png';
 
-function Dashboard({ summary, onFilterChange }) {
-  // Example data for demonstration
-  const exampleWorkflows = [
-    'CI Pipeline',
-    'Deploy to Production',
-    'Lint & Test',
-    'Build Docs',
-  ];
+function Dashboard({ summary = {}, onFilterChange }) {
+  const [logs, setLogs] = useState([]);
+  const [failures, setFailures] = useState([]);
+  const [workflows, setWorkflows] = useState([]);
+  const logsRef = useRef([]);
 
-  // State to hold all failures (simulate receiving new failures)
-  const [failures, setFailures] = useState([
-    { workflow: 'CI Pipeline', failures: 3, last: '2025-07-09' },
-    { workflow: 'Deploy to Production', failures: 2, last: '2025-07-08' },
-    { workflow: 'Lint & Test', failures: 1, last: '2025-07-07' },
-    { workflow: 'Build Docs', failures: 1, last: '2025-07-06' },
-  ]);
+  // Random log generation in-memory every 10 seconds
+  useEffect(() => {
+    function getRandom(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+    function generateLog() {
+      const workflowsArr = [
+        'CI Pipeline',
+        'Deploy to Production',
+        'Lint & Test',
+        'Build Docs',
+        'Security Scan',
+        'Integration Test',
+        'Release',
+      ];
+      const issues = [
+        'Test failed',
+        'Deployment error',
+        'Lint error',
+        'Build failed',
+        'Timeout',
+        'Permission denied',
+        'Dependency error',
+      ];
+      const assignees = ['Alice', 'Bob', 'Charlie', 'Dana', 'Eve', 'Frank', 'Grace'];
+      const summaries = [
+        'Unit test error in step 3',
+        'Timeout during deployment',
+        'ESLint rule violation',
+        'Docs build script error',
+        'Token expired',
+        'Network unreachable',
+        'Unknown error occurred',
+      ];
+      return {
+        workflow: getRandom(workflowsArr),
+        issue: getRandom(issues),
+        summary: getRandom(summaries),
+        date: new Date().toISOString().slice(0, 10),
+        assignee: getRandom(assignees),
+      };
+    }
 
-  // Example logs for the logs sheet
-  const [logs] = useState([
-    { workflow: 'CI Pipeline', issue: 'Test failed', summary: 'Unit test error in step 3', date: '2025-07-09', assignee: 'Alice' },
-    { workflow: 'Deploy to Production', issue: 'Deployment error', summary: 'Timeout during deployment', date: '2025-07-08', assignee: 'Bob' },
-    { workflow: 'Lint & Test', issue: 'Lint error', summary: 'ESLint rule violation', date: '2025-07-07', assignee: 'Charlie' },
-    { workflow: 'Build Docs', issue: 'Build failed', summary: 'Docs build script error', date: '2025-07-06', assignee: 'Dana' },
-  ]);
+    // Initial batch of logs
+    const initialLogs = Array.from({ length: 10 }, generateLog);
+    logsRef.current = initialLogs;
+    setLogs([...initialLogs]);
 
-  // Function to simulate receiving a new failure
-  const addFailure = (workflow, date) => {
-    setFailures(prev => {
-      const idx = prev.findIndex(f => f.workflow === workflow);
-      if (idx !== -1) {
-        // Update existing
-        const updated = [...prev];
-        updated[idx] = {
-          ...updated[idx],
-          failures: updated[idx].failures + 1,
-          last: date,
-        };
-        return updated;
-      } else {
-        // Add new
-        return [...prev, { workflow, failures: 1, last: date }];
-      }
+    const addLog = () => {
+      logsRef.current = [...logsRef.current, generateLog()];
+      setLogs([...logsRef.current]);
+    };
+    const interval = setInterval(addLog, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Summarize failures and workflows when logs change
+  useEffect(() => {
+    const summaryMap = {};
+    logs.forEach(log => {
+      if (!summaryMap[log.workflow]) summaryMap[log.workflow] = { workflow: log.workflow, failures: 0, last: log.date };
+      summaryMap[log.workflow].failures += 1;
+      if (log.date > summaryMap[log.workflow].last) summaryMap[log.workflow].last = log.date;
     });
-  };
+    setFailures(Object.values(summaryMap));
+    setWorkflows([...new Set(logs.map(l => l.workflow))]);
+  }, [logs]);
+
 
   // Emoji status logic
   const failureCount = summary.totalFailures || failures.reduce((sum, f) => sum + f.failures, 0);
@@ -58,6 +88,7 @@ function Dashboard({ summary, onFilterChange }) {
     statusEmoji = '😟';
     statusText = 'Warning';
   }
+
 
   // CSV download handler for multi-sheet (Excel)
   const handleDownloadCSV = async () => {
@@ -85,23 +116,11 @@ function Dashboard({ summary, onFilterChange }) {
     URL.revokeObjectURL(url);
   };
 
-  // For demo: button to add a new failure
-  const handleAddFailure = () => {
-    // Randomly pick a workflow or add a new one
-    const workflows = [...exampleWorkflows, 'New Workflow'];
-    const workflow = workflows[Math.floor(Math.random() * workflows.length)];
-    const date = new Date().toISOString().slice(0, 10);
-    addFailure(workflow, date);
-  };
 
-  // Reset handler
+  // Reset handler: clear logs file (optional, not implemented here)
   const handleReset = () => {
-    setFailures([
-      { workflow: 'CI Pipeline', failures: 3, last: '2025-07-09' },
-      { workflow: 'Deploy to Production', failures: 2, last: '2025-07-08' },
-      { workflow: 'Lint & Test', failures: 1, last: '2025-07-07' },
-      { workflow: 'Build Docs', failures: 1, last: '2025-07-06' },
-    ]);
+    // Not implemented: would require an API to clear the logs file
+    alert('Reset is not available in live log mode. Please clear dummy_logs.json manually.');
   };
 
   // Colorful card backgrounds (remove animation)
@@ -117,7 +136,6 @@ function Dashboard({ summary, onFilterChange }) {
         <img src={voisLogo} alt="VOIS Logo" style={{ height: 48, borderRadius: 8, background: '#fff', padding: 4 }} />
         <h2 style={{ margin: 0 }}>Pipeline Pulse Dashboard</h2>
         <button onClick={handleDownloadCSV} style={{marginLeft: 'auto', background:'#23272f', color:'#fff', border:'none', borderRadius:6, padding:'8px 18px', cursor:'pointer'}}>Download Excel</button>
-        <button onClick={handleAddFailure} style={{marginLeft: 12, background:'#4f8cff', color:'#fff', border:'none', borderRadius:6, padding:'8px 18px', cursor:'pointer'}}>Simulate New Failure</button>
         <button onClick={handleReset} style={{marginLeft: 12, background:'#ff5c5c', color:'#fff', border:'none', borderRadius:6, padding:'8px 18px', cursor:'pointer'}}>Reset</button>
       </div>
       <div className="summary-cards">
@@ -142,7 +160,7 @@ function Dashboard({ summary, onFilterChange }) {
           Workflow:
           <select onChange={e => onFilterChange('workflow', e.target.value)}>
             <option value="">All</option>
-            {exampleWorkflows.map((wf, idx) => (
+            {workflows.map((wf, idx) => (
               <option key={idx} value={wf}>{wf}</option>
             ))}
           </select>
@@ -152,9 +170,9 @@ function Dashboard({ summary, onFilterChange }) {
           <input type="date" onChange={e => onFilterChange('date', e.target.value)} />
         </label>
       </div>
-      {/* Example summary section */}
+      {/* Live summary section */}
       <div style={{marginTop: 24}}>
-        <h4>Example Issue Summary</h4>
+        <h4>Live Issue Summary</h4>
         <ul>
           {failures.map((f, idx) => (
             <li key={idx}>{f.failures} failure{f.failures > 1 ? 's' : ''} in <b>{f.workflow}</b> (last: {f.last})</li>
