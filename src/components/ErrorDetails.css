@@ -1,0 +1,17 @@
+.error-details {
+  background: linear-gradient(135deg, #23272f 60%, #23272f 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+  padding: 24px;
+  margin-bottom: 32px;
+  color: #f3f6fa;
+}
+.error-details pre {
+  background: #181a20;
+  color: #f3f6fa;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 15px;
+  border: 1px solid #353945;
+}

@@ -40,3 +40,19 @@
 .read-the-docs {
   color: #888;
 }
+
+body {
+  background: #181a20;
+  color: #f3f6fa;
+}
+
+.pipeline-pulse-app {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: transparent;
+  min-height: 100vh;
+  padding: 32px;
+}
+
+h2, h3, h4 {
+  color: #fff;
+}

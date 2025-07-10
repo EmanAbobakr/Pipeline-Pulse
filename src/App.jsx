@@ -1,35 +1,30 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState } from 'react';
+import Dashboard from './components/Dashboard';
+import WorkflowTable from './components/WorkflowTable';
+import ErrorDetails from './components/ErrorDetails';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  // Placeholder state for UI structure
+  const [summary, setSummary] = useState({
+    totalFailures: 0,
+    uniqueIssues: 0,
+    mostCommonError: '-',
+  });
+  const [workflows, setWorkflows] = useState([]);
+  const [selectedError, setSelectedError] = useState(null);
+
+  const handleFilterChange = (type, value) => {
+    // Filtering logic will go here
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Hello ya Github Copilot</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="pipeline-pulse-app">
+      <Dashboard summary={summary} onFilterChange={handleFilterChange} />
+      <WorkflowTable workflows={workflows} onSelect={setSelectedError} />
+      <ErrorDetails error={selectedError} />
+    </div>
+  );
 }
 
-export default App
+export default App;
