@@ -7,6 +7,23 @@ function Dashboard({ summary = {}, onFilterChange }) {
   const [failures, setFailures] = useState([]);
   const [workflows, setWorkflows] = useState([]);
   const logsRef = useRef([]);
+  const screamAudioRef = useRef(null);
+  const prevFailureCount = useRef(0);
+
+  // Play scream sound if total failures >= 10 and increase
+  useEffect(() => {
+    if (!screamAudioRef.current) return;
+    if (prevFailureCount.current >= 10 && summary.totalFailures > prevFailureCount.current) {
+      // Play scream for each new failure above 10
+      screamAudioRef.current.currentTime = 0;
+      screamAudioRef.current.play();
+    } else if (prevFailureCount.current < 10 && summary.totalFailures >= 10) {
+      // Play scream when reaching 10
+      screamAudioRef.current.currentTime = 0;
+      screamAudioRef.current.play();
+    }
+    prevFailureCount.current = summary.totalFailures;
+  }, [summary.totalFailures]);
 
   // Random log generation in-memory every 10 seconds
   useEffect(() => {
@@ -132,6 +149,7 @@ function Dashboard({ summary = {}, onFilterChange }) {
 
   return (
     <div className="dashboard">
+      <audio ref={screamAudioRef} src="/scream.mp3" preload="auto" />
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
         <img src={voisLogo} alt="VOIS Logo" style={{ height: 48, borderRadius: 8, background: '#fff', padding: 4 }} />
         <h2 style={{ margin: 0 }}>Pipeline Pulse Dashboard</h2>
