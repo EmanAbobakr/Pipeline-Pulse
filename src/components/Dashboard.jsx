@@ -19,6 +19,14 @@ function Dashboard({ summary, onFilterChange }) {
     { workflow: 'Build Docs', failures: 1, last: '2025-07-06' },
   ]);
 
+  // Example logs for the logs sheet
+  const [logs] = useState([
+    { workflow: 'CI Pipeline', issue: 'Test failed', summary: 'Unit test error in step 3', date: '2025-07-09', assignee: 'Alice' },
+    { workflow: 'Deploy to Production', issue: 'Deployment error', summary: 'Timeout during deployment', date: '2025-07-08', assignee: 'Bob' },
+    { workflow: 'Lint & Test', issue: 'Lint error', summary: 'ESLint rule violation', date: '2025-07-07', assignee: 'Charlie' },
+    { workflow: 'Build Docs', issue: 'Build failed', summary: 'Docs build script error', date: '2025-07-06', assignee: 'Dana' },
+  ]);
+
   // Function to simulate receiving a new failure
   const addFailure = (workflow, date) => {
     setFailures(prev => {
@@ -51,16 +59,28 @@ function Dashboard({ summary, onFilterChange }) {
     statusText = 'Warning';
   }
 
-  // CSV download handler
-  const handleDownloadCSV = () => {
-    const header = 'Workflow,Failures,Last Failure Date\n';
-    const rows = failures.map(row => `${row.workflow},${row.failures},${row.last}`).join('\n');
-    const csvContent = header + rows;
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+  // CSV download handler for multi-sheet (Excel)
+  const handleDownloadCSV = async () => {
+    // Sheet 1: Summary
+    const summaryHeader = ['Workflow', 'Failures', 'Last Failure Date'];
+    const summaryRows = failures.map(row => [row.workflow, row.failures, row.last]);
+    // Sheet 2: Logs
+    const logsHeader = ['Workflow', 'Issue', 'Summary', 'Date', 'Assignee'];
+    const logsRows = logs.map(row => [row.workflow, row.issue, row.summary, row.date, row.assignee]);
+
+    // Use SheetJS to create an Excel file with two sheets
+    const XLSX = await import('xlsx');
+    const wb = XLSX.utils.book_new();
+    const wsSummary = XLSX.utils.aoa_to_sheet([summaryHeader, ...summaryRows]);
+    const wsLogs = XLSX.utils.aoa_to_sheet([logsHeader, ...logsRows]);
+    XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+    XLSX.utils.book_append_sheet(wb, wsLogs, 'Logs');
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([wbout], { type: 'application/octet-stream' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'pipeline_pulse_summary.csv';
+    a.download = 'pipeline_pulse_data.xlsx';
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -79,7 +99,7 @@ function Dashboard({ summary, onFilterChange }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
         <img src={voisLogo} alt="VOIS Logo" style={{ height: 48, borderRadius: 8, background: '#fff', padding: 4 }} />
         <h2 style={{ margin: 0 }}>Pipeline Pulse Dashboard</h2>
-        <button onClick={handleDownloadCSV} style={{marginLeft: 'auto', background:'#23272f', color:'#fff', border:'none', borderRadius:6, padding:'8px 18px', cursor:'pointer'}}>Download CSV</button>
+        <button onClick={handleDownloadCSV} style={{marginLeft: 'auto', background:'#23272f', color:'#fff', border:'none', borderRadius:6, padding:'8px 18px', cursor:'pointer'}}>Download Excel</button>
         <button onClick={handleAddFailure} style={{marginLeft: 12, background:'#4f8cff', color:'#fff', border:'none', borderRadius:6, padding:'8px 18px', cursor:'pointer'}}>Simulate New Failure</button>
       </div>
       <div className="summary-cards">
