@@ -94,6 +94,13 @@ function Dashboard({ summary, onFilterChange }) {
     addFailure(workflow, date);
   };
 
+  // Colorful card backgrounds (remove animation)
+  const cardColors = [
+    'linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%)',
+    'linear-gradient(135deg, #43cea2 0%, #185a9d 100%)',
+    'linear-gradient(135deg, #f7971e 0%, #ffd200 100%)',
+  ];
+
   return (
     <div className="dashboard">
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
@@ -103,17 +110,20 @@ function Dashboard({ summary, onFilterChange }) {
         <button onClick={handleAddFailure} style={{marginLeft: 12, background:'#4f8cff', color:'#fff', border:'none', borderRadius:6, padding:'8px 18px', cursor:'pointer'}}>Simulate New Failure</button>
       </div>
       <div className="summary-cards">
-        <div className="card">
+        <div className="card" style={{ background: cardColors[0], color: '#fff', boxShadow: '0 4px 24px rgba(255,126,95,0.18)' }}>
           <h3>Total Failures</h3>
-          <p>{failureCount} <span title={statusText} style={{fontSize: 24, marginLeft: 8}}>{statusEmoji}</span></p>
+          <p style={{ fontSize: 32, fontWeight: 700 }}>
+            {failureCount}
+            <span title={statusText} style={{ fontSize: 32, marginLeft: 12 }}>{statusEmoji}</span>
+          </p>
         </div>
-        <div className="card">
+        <div className="card" style={{ background: cardColors[1], color: '#fff', boxShadow: '0 4px 24px rgba(67,206,162,0.18)' }}>
           <h3>Unique Issues</h3>
-          <p>{summary.uniqueIssues || failures.length}</p>
+          <p style={{ fontSize: 28, fontWeight: 600 }}>{summary.uniqueIssues || failures.length}</p>
         </div>
-        <div className="card">
+        <div className="card" style={{ background: cardColors[2], color: '#fff', boxShadow: '0 4px 24px rgba(247,151,30,0.18)' }}>
           <h3>Most Common Error</h3>
-          <p>{summary.mostCommonError || 'npm ERR! Command failed with exit code 1.'}</p>
+          <p style={{ fontSize: 18, fontWeight: 500 }}>{summary.mostCommonError || 'npm ERR! Command failed with exit code 1.'}</p>
         </div>
       </div>
       <div className="filters">

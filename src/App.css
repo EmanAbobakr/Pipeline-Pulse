@@ -35,6 +35,7 @@
 
 .card {
   padding: 2em;
+  color: #fff !important;
 }
 
 .read-the-docs {
@@ -46,13 +47,27 @@ body {
   color: #f3f6fa;
 }
 
-.pipeline-pulse-app {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  background: transparent;
-  min-height: 100vh;
-  padding: 32px;
+.pipeline-pulse-app, .dashboard {
+  color: #f3f6fa;
 }
 
-h2, h3, h4 {
+h2, h3, h4, label {
   color: #fff;
+}
+
+select, input[type="date"] {
+  background: #23272f;
+  color: #f3f6fa;
+  border: 1px solid #353945;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-left: 8px;
+}
+
+.filters label {
+  color: #b0b6c3;
+}
+
+.dashboard ul {
+  color: #f3f6fa;
 }
